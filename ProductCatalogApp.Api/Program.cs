@@ -1,3 +1,5 @@
+using ProductCatalogApp.Api.Hubs;
+using ProductCatalogApp.Api.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.EntityFrameworkCore;
@@ -43,6 +45,14 @@ builder.Services.AddIdentityCore<IdentityUser>(options =>
 }).AddRoles<IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddSignInManager();
 builder.Services.AddAuthorization();
 
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<OnlineConnections>();
+builder.Services.AddScoped<ReadingService>();
+builder.Services.AddHostedService<SensorSimulator>();
+builder.Services.AddCors(options => options.AddPolicy("Client", policy => policy
+    .WithOrigins(builder.Configuration["Cors:ClientOrigin"] ?? "http://localhost:5034")
+    .AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -50,6 +60,7 @@ using (var scope = app.Services.CreateScope())
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     context.Database.Migrate();
     DbSeeder.Seed(context);
+    await MonitoringSeeder.SeedAsync(context);
     await IdentitySeeder.SeedAsync(scope.ServiceProvider, app.Configuration);
 }
 
@@ -64,11 +75,13 @@ app.UseSwaggerUI(options =>
     options.SwaggerEndpoint("/swagger/v1/swagger.json", "Product Catalog API v1");
 });
 
+app.UseCors("Client");
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 
 app.MapControllers();
+app.MapHub<MonitoringHub>("/hubs/monitoring").RequireAuthorization();
 
 app.Run();

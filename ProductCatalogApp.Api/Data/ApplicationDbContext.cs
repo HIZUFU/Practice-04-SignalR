@@ -13,6 +13,14 @@ namespace ProductCatalogApp.Api.Data
         {
         }
 
+        public DbSet<Sensor> Sensors => Set<Sensor>();
+        public DbSet<SensorReading> SensorReadings => Set<SensorReading>();
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<SensorReading>().HasIndex(r => new { r.SensorId, r.Timestamp });
+        }
+
         public DbSet<ProductionSite> ProductionSites =>
             Set<ProductionSite>();
 
