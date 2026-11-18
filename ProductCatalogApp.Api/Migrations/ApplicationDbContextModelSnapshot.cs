@@ -256,6 +256,78 @@ namespace ProductCatalogApp.Api.Migrations
                     b.ToTable("ProductionSites");
                 });
 
+            modelBuilder.Entity("ProductCatalogApp.Api.Models.Sensor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("EquipmentId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double>("MaxValue")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("MinValue")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EquipmentId");
+
+                    b.ToTable("Sensors");
+                });
+
+            modelBuilder.Entity("ProductCatalogApp.Api.Models.SensorReading", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("AcknowledgedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AcknowledgedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsAcknowledged")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsAlarm")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SensorId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("Value")
+                        .HasColumnType("REAL");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SensorId", "Timestamp");
+
+                    b.ToTable("SensorReadings");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -318,9 +390,36 @@ namespace ProductCatalogApp.Api.Migrations
                     b.Navigation("ProductionSite");
                 });
 
+            modelBuilder.Entity("ProductCatalogApp.Api.Models.Sensor", b =>
+                {
+                    b.HasOne("ProductCatalogApp.Api.Models.Equipment", "Equipment")
+                        .WithMany()
+                        .HasForeignKey("EquipmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Equipment");
+                });
+
+            modelBuilder.Entity("ProductCatalogApp.Api.Models.SensorReading", b =>
+                {
+                    b.HasOne("ProductCatalogApp.Api.Models.Sensor", "Sensor")
+                        .WithMany("Readings")
+                        .HasForeignKey("SensorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Sensor");
+                });
+
             modelBuilder.Entity("ProductCatalogApp.Api.Models.ProductionSite", b =>
                 {
                     b.Navigation("EquipmentItems");
+                });
+
+            modelBuilder.Entity("ProductCatalogApp.Api.Models.Sensor", b =>
+                {
+                    b.Navigation("Readings");
                 });
 #pragma warning restore 612, 618
         }
